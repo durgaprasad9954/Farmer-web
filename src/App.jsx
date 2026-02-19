@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { LanguageProvider } from './context/LanguageContext'
 import Sidebar from './components/Sidebar/Sidebar'
 import ChatWindow from './components/Chat/ChatWindow'
-import './styles/app.css'
+import './styles/App.css'
 
 export default function App() {
   const [activeChat, setActiveChat] = useState('farm-assistant')
