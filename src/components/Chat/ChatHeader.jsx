@@ -2,19 +2,18 @@ import React from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import './ChatHeader.css'
 
-const API_ENDPOINTS = [
-  { label: '🖹 Text Analysis', value: 'text' },
-  { label: '🖼 Text Analysis (Upload)', value: 'upload' },
-]
-
-const BASE_URL = 'https://newapi.alumnx.com/agrigpt/fastapi'
-
-export default function ChatHeader({ onMenuClick, apiMode, onApiModeChange }) {
+export default function ChatHeader({ onMenuClick, topK, onTopKChange, phoneNumber, onPhoneNumberChange }) {
   const { t, lang, setLang, languages } = useLanguage()
 
-  const endpointUrl = apiMode === 'text'
-    ? `${BASE_URL}/query-text`
-    : `${BASE_URL}/query-image-upload`
+  const handleTopKChange = (e) => {
+    const value = parseInt(e.target.value) || 5
+    onTopKChange(value)
+  }
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '')
+    onPhoneNumberChange(value)
+  }
 
   const LANG_LABELS = { en: 'EN', hi: 'हि', te: 'తె' }
 
@@ -57,21 +56,25 @@ export default function ChatHeader({ onMenuClick, apiMode, onApiModeChange }) {
 
       {/* API info bar (desktop only) */}
       <div className="api-bar">
-        <span>⚙️ Backend API:</span>
-        <select value={apiMode} onChange={e => onApiModeChange(e.target.value)}>
-          {API_ENDPOINTS.map(ep => (
-            <option key={ep.value} value={ep.value}>{ep.label}</option>
-          ))}
-        </select>
-        <span className="api-bar-url">{endpointUrl}</span>
-        <a
-          className="api-docs-link"
-          href="https://newapi.alumnx.com/agrigpt/fastapi/docs"
-          target="_blank"
-          rel="noreferrer"
-        >
-          ↗ Docs
-        </a>
+        <span>📱 Phone:</span>
+        <input
+          type="tel"
+          value={phoneNumber}
+          onChange={handlePhoneChange}
+          placeholder="Phone number"
+          className="phone-input"
+          maxLength="15"
+        />
+        <span>🔢 Top K:</span>
+        <input
+          type="number"
+          value={topK}
+          onChange={handleTopKChange}
+          min="1"
+          max="20"
+          className="topk-input"
+        />
+        <span className="api-bar-url">http://13.200.178.118:8008/query-image-upload</span>
       </div>
     </>
   )

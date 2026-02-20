@@ -54,6 +54,22 @@
   background: #fff; border: 1px solid #ddd; border-radius: 5px;
   padding: 3px 6px; font-family: inherit; font-size: 0.78rem; cursor: pointer;
 }
+.phone-input {
+  background: #fff; border: 1px solid #ddd; border-radius: 5px;
+  padding: 3px 8px; font-family: inherit; font-size: 0.78rem;
+  width: 120px;
+}
+.phone-input:focus {
+  outline: none; border-color: var(--green-500);
+}
+.topk-input {
+  background: #fff; border: 1px solid #ddd; border-radius: 5px;
+  padding: 3px 8px; font-family: inherit; font-size: 0.78rem;
+  width: 60px;
+}
+.topk-input:focus {
+  outline: none; border-color: var(--green-500);
+}
 .api-bar-url {
   color: #1565c0; font-family: 'DM Mono', monospace; font-size: 0.73rem;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;

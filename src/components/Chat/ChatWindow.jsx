@@ -7,16 +7,16 @@ import { useLanguage } from '../../context/LanguageContext'
 import './ChatWindow.css'
 
 export default function ChatWindow({ onMenuClick }) {
-  const { lang } = useLanguage()
-  const [apiMode, setApiMode] = useState('upload') // 'text' | 'upload'
-  const { messages, isLoading, error, sendText, sendImage, clearError } = useChat(lang)
+  const { messages, isLoading, error, sendText, sendImage, clearError, topK, setTopK, phoneNumber, setPhoneNumber, query, setQuery } = useChat()
 
   return (
     <div className="chat-window">
       <ChatHeader
         onMenuClick={onMenuClick}
-        apiMode={apiMode}
-        onApiModeChange={setApiMode}
+        topK={topK}
+        onTopKChange={setTopK}
+        phoneNumber={phoneNumber}
+        onPhoneNumberChange={setPhoneNumber}
       />
       <MessageList
         messages={messages}
@@ -28,6 +28,8 @@ export default function ChatWindow({ onMenuClick }) {
         onSendText={sendText}
         onSendImage={sendImage}
         isLoading={isLoading}
+        query={query}
+        onQueryChange={setQuery}
       />
     </div>
   )
