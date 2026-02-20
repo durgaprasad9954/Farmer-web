@@ -62,6 +62,11 @@
 .message-row.user .bubble { background: var(--bubble-user); border-bottom-right-radius: 3px; }
 .message-row.assistant .bubble { background: var(--bubble-ai); border-bottom-left-radius: 3px; }
 
+/* Wide bubble for search results */
+.bubble--wide {
+  max-width: min(85%, 720px) !important;
+}
+
 .bubble-image {
   width: 100%;
   max-width: 260px;

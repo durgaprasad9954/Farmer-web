@@ -9,10 +9,17 @@ export function useChat() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [query, setQuery] = useState('')
 
-  const appendMessage = useCallback((role, content, imageUrl = null) => {
+  const appendMessage = useCallback((role, content, imageUrl = null, messageType = 'text') => {
     setMessages(prev => [
       ...prev,
-      { id: Date.now() + Math.random(), role, content, imageUrl, timestamp: new Date() },
+      { 
+        id: Date.now() + Math.random(), 
+        role, 
+        content, 
+        imageUrl, 
+        messageType,
+        timestamp: new Date() 
+      },
     ])
   }, [])
 
@@ -26,11 +33,12 @@ export function useChat() {
       return
     }
     setError(null)
-    appendMessage('user', query)
+    appendMessage('user', query, null, 'text')
     setIsLoading(true)
     try {
       const response = await sendTextQuery(phoneNumber, query)
-      appendMessage('assistant', response)
+      // Response is now an object with type and content
+      appendMessage('assistant', response.content, null, response.type)
       setQuery('')
     } catch (err) {
       setError(err.message || 'Failed to get response')
@@ -50,11 +58,12 @@ export function useChat() {
     }
     setError(null)
     const imageUrl = URL.createObjectURL(file)
-    appendMessage('user', query, imageUrl)
+    appendMessage('user', query, imageUrl, 'text')
     setIsLoading(true)
     try {
       const response = await sendImageQuery(file, phoneNumber, query, topK)
-      appendMessage('assistant', response)
+      // Response is now an object with type and content
+      appendMessage('assistant', response.content, null, response.type)
       setQuery('')
     } catch (err) {
       setError(err.message || 'Failed to analyze image')
