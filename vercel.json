@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/image-proxy",
+      "destination": "/api/image-proxy"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }

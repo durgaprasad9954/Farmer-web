@@ -73,7 +73,22 @@ export default async function handler(req, res) {
       // Return the text response wrapped in an object
       data = { response: responseText }
     }
-    
+
+    // Rewrite HTTP image_url values in results to use the image-proxy endpoint.
+    // This prevents Mixed Content errors in the browser (Vercel is HTTPS, backend is HTTP).
+    if (data.results && Array.isArray(data.results)) {
+      data.results = data.results.map(result => {
+        if (result.image_url && typeof result.image_url === 'string' &&
+            result.image_url.startsWith('http://')) {
+          return {
+            ...result,
+            image_url: `/api/image-proxy?url=${encodeURIComponent(result.image_url)}`,
+          }
+        }
+        return result
+      })
+    }
+
     return res.status(response.status).json(data)
   } catch (error) {
     console.error('[Proxy] Error:', error.message)
