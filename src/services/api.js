@@ -42,7 +42,15 @@ export async function sendImageQuery(imageFile, phoneNumber, query, topK = 5) {
   formData.append('phone_number', phoneNumber)
   formData.append('query', query)
 
-  const imageUrl = `${IMAGE_BASE_URL}/query-image-upload?top_k=${topK}`
+  // In production, use Vercel serverless proxy to avoid HTTPS/HTTP mixed content
+  // In development, call backend directly
+  const imageUrl = API_CONFIG.IMAGE_PROXY 
+    ? `${API_CONFIG.IMAGE_PROXY}?top_k=${topK}`
+    : `${IMAGE_BASE_URL}${API_CONFIG.ENDPOINTS.IMAGE_UPLOAD}?top_k=${topK}`
+  
+  console.log('[Image Upload] Sending to:', imageUrl)
+  console.log('[Image Upload] Environment:', import.meta.env.PROD ? 'production' : 'development')
+  console.log('[Image Upload] File:', imageFile.name, imageFile.type, imageFile.size, 'bytes')
   
   try {
     const response = await fetch(imageUrl, {
@@ -51,18 +59,28 @@ export async function sendImageQuery(imageFile, phoneNumber, query, topK = 5) {
       body: formData,
     })
 
+    console.log('[Image Upload] Response status:', response.status, response.statusText)
+    console.log('[Image Upload] Response headers:', Object.fromEntries(response.headers.entries()))
+
     if (!response.ok) {
       const errorText = await response.text().catch(() => '')
+      console.error('[Image Upload] Error response:', errorText)
       throw new Error(errorText || `Upload failed with status ${response.status}`)
     }
 
     const data = await response.json()
+    console.log('[Image Upload] Success response:', data)
     return extractResponse(data)
   } catch (error) {
-    console.error('Image upload error:', error)
+    console.error('[Image Upload] Exception caught:', error)
+    console.error('[Image Upload] Error stack:', error.stack)
     
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      throw new Error('Cannot connect to image server. The server may not support HTTPS requests or CORS is not enabled.')
+      throw new Error('Cannot connect to image server. Please check if the backend is accessible and CORS is properly configured.')
+    }
+    
+    if (error.message.includes('NOT_FOUND') || error.message.includes('404')) {
+      throw new Error('Image upload endpoint not found. The proxy route may not be configured correctly.')
     }
     
     throw new Error(`Failed to upload image: ${error.message}`)

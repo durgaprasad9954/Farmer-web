@@ -8,13 +8,18 @@ export const API_CONFIG = {
   BASE_URL: 'https://newapi.alumnx.com/agrigpt/fastapi',
   
   // Image upload base URL
+  // In production, use Vercel serverless proxy to avoid HTTPS/HTTP mixed content issues
+  // In development, call the HTTP backend directly
   IMAGE_BASE_URL: import.meta.env.PROD ? '' : 'http://13.200.178.118:8008',
   
   // API endpoints
   ENDPOINTS: {
     WHATSAPP: '/whatsapp',
-    IMAGE_UPLOAD: import.meta.env.PROD ? '/api/image-upload' : '/query-image-upload',
+    IMAGE_UPLOAD: '/query-image-upload',
   },
+  
+  // Production uses Vercel proxy to handle HTTP backend
+  IMAGE_PROXY: import.meta.env.PROD ? '/api/image-upload' : null,
   
   // Request timeout in milliseconds
   TIMEOUT: 30000,
