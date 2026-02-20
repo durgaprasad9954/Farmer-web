@@ -7,13 +7,13 @@ export const API_CONFIG = {
   // Base URL for the AgriGPT backend
   BASE_URL: 'https://newapi.alumnx.com/agrigpt/fastapi',
   
-  // Image upload base URL (always use HTTP backend with CORS enabled)
-  IMAGE_BASE_URL: 'http://13.200.178.118:8008',
+  // Image upload base URL (use proxy in production, direct in dev)
+  IMAGE_BASE_URL: import.meta.env.PROD ? '' : 'http://13.200.178.118:8008',
   
   // API endpoints
   ENDPOINTS: {
     WHATSAPP: '/whatsapp',
-    IMAGE_UPLOAD: '/query-image-upload',
+    IMAGE_UPLOAD: import.meta.env.PROD ? '/api/image-upload' : '/query-image-upload',
   },
   
   // Request timeout in milliseconds

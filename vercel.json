@@ -1,5 +1,11 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/image-upload",
+      "destination": "http://13.200.178.118:8008/query-image-upload"
+    }
+  ]
 }
