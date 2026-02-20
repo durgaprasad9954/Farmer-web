@@ -57,12 +57,18 @@ export function useChat() {
       return
     }
     setError(null)
-    const imageUrl = URL.createObjectURL(file)
-    appendMessage('user', query, imageUrl, 'text')
+    
+    // Convert to base64 for persistent display
+    const reader = new FileReader()
+    reader.onload = () => {
+      const imageUrl = reader.result
+      appendMessage('user', query, imageUrl, 'text')
+    }
+    reader.readAsDataURL(file)
+    
     setIsLoading(true)
     try {
       const response = await sendImageQuery(file, phoneNumber, query, topK)
-      // Response is now an object with type and content
       appendMessage('assistant', response.content, null, response.type)
       setQuery('')
     } catch (err) {
