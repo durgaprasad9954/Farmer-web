@@ -7,11 +7,19 @@ export const API_CONFIG = {
   // Base URL for the AgriGPT backend
   BASE_URL: 'https://newapi.alumnx.com/agrigpt/fastapi',
   
+  // Image upload base URL
+  // In production, use Vercel serverless proxy to avoid HTTPS/HTTP mixed content issues
+  // In development, call the HTTP backend directly
+  IMAGE_BASE_URL: import.meta.env.PROD ? '' : 'http://13.200.178.118:8008',
+  
   // API endpoints
   ENDPOINTS: {
     WHATSAPP: '/whatsapp',
     IMAGE_UPLOAD: '/query-image-upload',
   },
+  
+  // Production uses Vercel proxy to handle HTTP backend
+  IMAGE_PROXY: import.meta.env.PROD ? '/api/image-upload' : null,
   
   // Request timeout in milliseconds
   TIMEOUT: 30000,
@@ -19,8 +27,8 @@ export const API_CONFIG = {
   // Retry configuration
   RETRY: {
     MAX_ATTEMPTS: 3,
-    DELAY: 1000, // Initial delay in ms
-    BACKOFF_MULTIPLIER: 2, // Exponential backoff
+    DELAY: 1000,
+    BACKOFF_MULTIPLIER: 2,
   },
   
   // Supported languages
@@ -39,22 +47,16 @@ export const API_CONFIG = {
   
   // Phone number generation config
   PHONE: {
-    COUNTRY_CODE: '91', // India
-    LENGTH: 12, // Total length including country code
+    COUNTRY_CODE: '91',
+    LENGTH: 12,
   },
   
   // Image upload settings
   IMAGE: {
-    MAX_SIZE: 5 * 1024 * 1024, // 5MB
+    MAX_SIZE: 5 * 1024 * 1024,
     ALLOWED_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
     COMPRESSION_QUALITY: 0.9,
   },
-}
-
-// Environment-specific overrides
-if (import.meta.env.DEV) {
-  // Development mode settings
-  API_CONFIG.TIMEOUT = 60000 // Longer timeout for dev
 }
 
 export default API_CONFIG
