@@ -1,7 +1,7 @@
 import API_CONFIG from '../config/api.config.js'
 
 const BASE_URL = API_CONFIG.BASE_URL
-const IMAGE_BASE_URL = 'http://13.200.178.118:8008'
+const IMAGE_BASE_URL = API_CONFIG.IMAGE_BASE_URL
 
 function extractResponse(data) {
   if (typeof data === 'string') return data
