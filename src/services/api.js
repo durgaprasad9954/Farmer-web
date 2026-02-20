@@ -4,15 +4,34 @@ const BASE_URL = API_CONFIG.BASE_URL
 const IMAGE_BASE_URL = API_CONFIG.IMAGE_BASE_URL
 
 function extractResponse(data) {
-  if (typeof data === 'string') return data
-  if (data.response) return data.response
-  if (data.message) return data.message
-  if (data.answer) return data.answer
-  if (data.result) return data.result
+  if (typeof data === 'string') return { type: 'text', content: data }
+  
+  // Image search results - return structured data
   if (data.results && Array.isArray(data.results)) {
-    return data.results.map((r, i) => `${i + 1}. ${r.disease || r.name || JSON.stringify(r)}`).join('\n\n')
+    // Check if it's image search results (has image_id or similarity_score)
+    const hasImageFields = data.results.some(r => 
+      r.image_id || r.similarity_score !== undefined || r.image_url
+    )
+    
+    if (hasImageFields) {
+      return { type: 'search_results', content: data.results }
+    }
+    
+    // Other array results - format as text
+    const text = data.results.map((r, i) => 
+      `${i + 1}. ${r.disease || r.name || JSON.stringify(r)}`
+    ).join('\n\n')
+    return { type: 'text', content: text }
   }
-  return JSON.stringify(data, null, 2)
+  
+  // Extract text from common response fields
+  if (data.response) return { type: 'text', content: data.response }
+  if (data.message) return { type: 'text', content: data.message }
+  if (data.answer) return { type: 'text', content: data.answer }
+  if (data.result) return { type: 'text', content: data.result }
+  
+  // Fallback to JSON string
+  return { type: 'text', content: JSON.stringify(data, null, 2) }
 }
 
 export async function sendTextQuery(phoneNumber, query) {

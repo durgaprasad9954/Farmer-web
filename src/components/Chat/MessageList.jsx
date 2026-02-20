@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
+import SearchResults from '../SearchResults/SearchResults'
 import './MessageList.css'
 
 /** Format a Date as HH:MM */
@@ -28,13 +29,22 @@ function WelcomeCard() {
 /** Single message bubble */
 function MessageBubble({ message }) {
   const isUser = message.role === 'user'
+  const isSearchResults = message.messageType === 'search_results'
+  
   return (
     <div className={`message-row ${message.role}`}>
-      <div className="bubble">
+      <div className={`bubble ${isSearchResults ? 'bubble--wide' : ''}`}>
         {message.imageUrl && (
           <img className="bubble-image" src={message.imageUrl} alt="uploaded crop" />
         )}
-        <div className="bubble-text">{message.content}</div>
+        
+        {/* Render search results */}
+        {isSearchResults ? (
+          <SearchResults results={message.content} />
+        ) : (
+          <div className="bubble-text">{message.content}</div>
+        )}
+        
         <div className="bubble-meta">
           {formatTime(message.timestamp)}
           {isUser && <span className="bubble-tick">✓✓</span>}
