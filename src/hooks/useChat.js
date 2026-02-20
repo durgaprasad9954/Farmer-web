@@ -1,10 +1,13 @@
 import { useState, useCallback } from 'react'
 import { sendTextQuery, sendImageQuery } from '../services/api'
 
-export function useChat(lang = 'en') {
+export function useChat() {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [topK, setTopK] = useState(5)
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [query, setQuery] = useState('')
 
   const appendMessage = useCallback((role, content, imageUrl = null) => {
     setMessages(prev => [
@@ -13,36 +16,53 @@ export function useChat(lang = 'en') {
     ])
   }, [])
 
-  const sendText = useCallback(async (text) => {
-    if (!text.trim()) return
+  const sendText = useCallback(async () => {
+    if (!phoneNumber.trim()) {
+      setError('Phone number is required')
+      return
+    }
+    if (!query.trim()) {
+      setError('Query is required')
+      return
+    }
     setError(null)
-    appendMessage('user', text)
+    appendMessage('user', query)
     setIsLoading(true)
     try {
-      const reply = await sendTextQuery(text, lang)
-      appendMessage('assistant', reply)
+      const response = await sendTextQuery(phoneNumber, query)
+      appendMessage('assistant', response)
+      setQuery('')
     } catch (err) {
       setError(err.message || 'Failed to get response')
     } finally {
       setIsLoading(false)
     }
-  }, [lang, appendMessage])
+  }, [phoneNumber, query, appendMessage])
 
-  const sendImage = useCallback(async (file, caption = '') => {
+  const sendImage = useCallback(async (file) => {
+    if (!phoneNumber.trim()) {
+      setError('Phone number is required')
+      return
+    }
+    if (!query.trim()) {
+      setError('Query is required')
+      return
+    }
     setError(null)
     const imageUrl = URL.createObjectURL(file)
-    appendMessage('user', caption || '📷 Photo sent for analysis', imageUrl)
+    appendMessage('user', query, imageUrl)
     setIsLoading(true)
     try {
-      const reply = await sendImageQuery(file, caption, lang)
-      appendMessage('assistant', reply)
+      const response = await sendImageQuery(file, phoneNumber, query, topK)
+      appendMessage('assistant', response)
+      setQuery('')
     } catch (err) {
       setError(err.message || 'Failed to analyze image')
     } finally {
       setIsLoading(false)
     }
-  }, [lang, appendMessage])
+  }, [topK, phoneNumber, query, appendMessage])
 
   const clearError = useCallback(() => setError(null), [])
-  return { messages, isLoading, error, sendText, sendImage, clearError }
+  return { messages, isLoading, error, sendText, sendImage, clearError, topK, setTopK, phoneNumber, setPhoneNumber, query, setQuery }
 }

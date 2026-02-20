@@ -2,12 +2,11 @@ import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import './MessageInput.css'
 
-export default function MessageInput({ onSendText, onSendImage, isLoading }) {
+export default function MessageInput({ onSendText, onSendImage, isLoading, query, onQueryChange }) {
   const { t } = useLanguage()
-  const [text, setText] = useState('')
-  const [pendingImage, setPendingImage] = useState(null) // { file, url }
+  const [pendingImage, setPendingImage] = useState(null)
   const [showCamera, setShowCamera] = useState(false)
-  const [capturedImage, setCapturedImage] = useState(null) // { file, url }
+  const [capturedImage, setCapturedImage] = useState(null)
 
   const fileInputRef = useRef(null)
   const textareaRef = useRef(null)
@@ -22,21 +21,20 @@ export default function MessageInput({ onSendText, onSendImage, isLoading }) {
       ta.style.height = 'auto'
       ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
     }
-  }, [text])
+  }, [query])
 
-  /** Handle text send */
+  /** Handle send */
   const handleSend = useCallback(() => {
     const img = capturedImage || pendingImage
     if (img) {
-      onSendImage(img.file, text.trim())
+      onSendImage(img.file)
       setPendingImage(null)
       setCapturedImage(null)
-    } else if (text.trim()) {
-      onSendText(text.trim())
+    } else if (query.trim()) {
+      onSendText()
     }
-    setText('')
     textareaRef.current?.focus()
-  }, [text, pendingImage, capturedImage, onSendText, onSendImage])
+  }, [capturedImage, pendingImage, query, onSendImage, onSendText])
 
   /** Send on Enter (not Shift+Enter) */
   const handleKeyDown = (e) => {
@@ -104,7 +102,7 @@ export default function MessageInput({ onSendText, onSendImage, isLoading }) {
   }
 
   const activeImage = capturedImage || pendingImage
-  const canSend = !isLoading && (text.trim() || activeImage)
+  const canSend = !isLoading && (query.trim() || activeImage)
 
   return (
     <div className="input-area">
@@ -128,7 +126,7 @@ export default function MessageInput({ onSendText, onSendImage, isLoading }) {
           </div>
           <div className="capture-bar">
             <button className="capture-btn retake" onClick={retakeCaptured}>📷 {t('retake')}</button>
-            <button className="capture-btn use" onClick={() => { onSendImage(capturedImage.file, text.trim()); setCapturedImage(null); setText('') }}>
+            <button className="capture-btn use" onClick={() => { onSendImage(capturedImage.file); setCapturedImage(null) }}>
               ✓ {t('usePhoto')}
             </button>
           </div>
@@ -143,13 +141,13 @@ export default function MessageInput({ onSendText, onSendImage, isLoading }) {
             <CameraIcon />
           </button>
 
-          {/* Text + emoji area */}
+          {/* Query textarea */}
           <div className="input-box">
             <textarea
               ref={textareaRef}
               rows={1}
-              value={text}
-              onChange={e => setText(e.target.value)}
+              value={query}
+              onChange={e => onQueryChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('typeQuery')}
               disabled={isLoading}

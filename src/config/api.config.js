@@ -10,8 +10,7 @@ export const API_CONFIG = {
   // API endpoints
   ENDPOINTS: {
     WHATSAPP: '/whatsapp',
-    HEALTH: '/health',
-    ROOT: '/',
+    IMAGE_UPLOAD: '/query-image-upload',
   },
   
   // Request timeout in milliseconds
