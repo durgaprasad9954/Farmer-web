@@ -5,31 +5,40 @@ const IMAGE_BASE_URL = API_CONFIG.IMAGE_BASE_URL
 
 function extractResponse(data) {
   if (typeof data === 'string') return { type: 'text', content: data }
-  
+
   // Image search results - return structured data
   if (data.results && Array.isArray(data.results)) {
     // Check if it's image search results (has image_id or similarity_score)
-    const hasImageFields = data.results.some(r => 
+    const hasImageFields = data.results.some(r =>
       r.image_id || r.similarity_score !== undefined || r.image_url
     )
-    
+
     if (hasImageFields) {
-      return { type: 'search_results', content: data.results }
+      const processedResults = data.results.map(result => {
+        if (result.image_url && import.meta.env.PROD && result.image_url.startsWith('http://13.200.178.118')) {
+          return {
+            ...result,
+            image_url: `/api/image-proxy?url=${encodeURIComponent(result.image_url)}`
+          }
+        }
+        return result
+      })
+      return { type: 'search_results', content: processedResults }
     }
-    
+
     // Other array results - format as text
-    const text = data.results.map((r, i) => 
+    const text = data.results.map((r, i) =>
       `${i + 1}. ${r.disease || r.name || JSON.stringify(r)}`
     ).join('\n\n')
     return { type: 'text', content: text }
   }
-  
+
   // Extract text from common response fields
   if (data.response) return { type: 'text', content: data.response }
   if (data.message) return { type: 'text', content: data.message }
   if (data.answer) return { type: 'text', content: data.answer }
   if (data.result) return { type: 'text', content: data.result }
-  
+
   // Fallback to JSON string
   return { type: 'text', content: JSON.stringify(data, null, 2) }
 }
@@ -63,14 +72,14 @@ export async function sendImageQuery(imageFile, phoneNumber, query, topK = 5) {
 
   // In production, use Vercel serverless proxy to avoid HTTPS/HTTP mixed content
   // In development, call backend directly
-  const imageUrl = API_CONFIG.IMAGE_PROXY 
+  const imageUrl = API_CONFIG.IMAGE_PROXY
     ? `${API_CONFIG.IMAGE_PROXY}?top_k=${topK}`
     : `${IMAGE_BASE_URL}${API_CONFIG.ENDPOINTS.IMAGE_UPLOAD}?top_k=${topK}`
-  
+
   console.log('[Image Upload] Sending to:', imageUrl)
   console.log('[Image Upload] Environment:', import.meta.env.PROD ? 'production' : 'development')
   console.log('[Image Upload] File:', imageFile.name, imageFile.type, imageFile.size, 'bytes')
-  
+
   try {
     const response = await fetch(imageUrl, {
       method: 'POST',
@@ -93,15 +102,15 @@ export async function sendImageQuery(imageFile, phoneNumber, query, topK = 5) {
   } catch (error) {
     console.error('[Image Upload] Exception caught:', error)
     console.error('[Image Upload] Error stack:', error.stack)
-    
+
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       throw new Error('Cannot connect to image server. Please check if the backend is accessible and CORS is properly configured.')
     }
-    
+
     if (error.message.includes('NOT_FOUND') || error.message.includes('404')) {
       throw new Error('Image upload endpoint not found. The proxy route may not be configured correctly.')
     }
-    
+
     throw new Error(`Failed to upload image: ${error.message}`)
   }
 }

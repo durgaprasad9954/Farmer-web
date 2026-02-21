@@ -35,20 +35,20 @@ export default async function handler(req, res) {
   try {
     const topK = req.query.top_k || '5'
     const backendUrl = `${BACKEND_URL}?top_k=${topK}`
-    
+
     console.log('[Proxy] Proxying request to:', backendUrl)
     console.log('[Proxy] Query params:', req.query)
     console.log('[Proxy] Content-Type:', req.headers['content-type'])
-    
+
     // Read the request body
     const chunks = []
     for await (const chunk of req) {
       chunks.push(chunk)
     }
     const buffer = Buffer.concat(chunks)
-    
+
     console.log('[Proxy] Request body size:', buffer.length, 'bytes')
-    
+
     // Forward to backend with original content-type
     const response = await fetch(backendUrl, {
       method: 'POST',
@@ -59,11 +59,11 @@ export default async function handler(req, res) {
     })
 
     console.log('[Proxy] Backend response status:', response.status)
-    
+
     // Get response text first
     const responseText = await response.text()
     console.log('[Proxy] Backend response:', responseText.substring(0, 500))
-    
+
     // Try to parse as JSON
     let data
     try {
@@ -73,23 +73,23 @@ export default async function handler(req, res) {
       // Return the text response wrapped in an object
       data = { response: responseText }
     }
-    
+
     return res.status(response.status).json(data)
   } catch (error) {
     console.error('[Proxy] Error:', error.message)
     console.error('[Proxy] Stack:', error.stack)
-    
+
     // Check if it's a network error
     if (error.message.includes('ECONNREFUSED') || error.message.includes('ETIMEDOUT')) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'Backend server is not reachable. Please check if http://13.200.178.118:8008 is running and accessible.',
-        details: error.message 
+        details: error.message
       })
     }
-    
-    return res.status(500).json({ 
+
+    return res.status(500).json({
       error: 'Proxy error: ' + error.message,
-      details: error.stack 
+      details: error.stack
     })
   }
 }
